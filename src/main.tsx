@@ -4,15 +4,16 @@ import App from './App.tsx'
 import './index.css'
 import {createBrowserRouter, RouterProvider} from 'react-router-dom'
 import ChatWindow from './components/ChatWindow.tsx'
+import MessageArea from './components/MessageArea.tsx'
 
 const router = createBrowserRouter([
   {
     path:'',
     element:<App />,
-    children: [
+    children:[
       {
-        path:'/:username',
-        element: <ChatWindow />
+        path:'/:connectionID',
+        element:<ChatWindow />
       }
     ]
   }
