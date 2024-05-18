@@ -3,8 +3,10 @@ import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 import {createBrowserRouter, RouterProvider} from 'react-router-dom'
-import ChatWindow from './components/ChatWindow.tsx'
-import MessageArea from './components/MessageArea.tsx'
+import Register from './auth/Register.tsx'
+import Login from './auth/Login.tsx'
+import Settings from './components/Settings.tsx'
+import ChatArea from './components/ChatArea.tsx'
 
 const router = createBrowserRouter([
   {
@@ -12,11 +14,23 @@ const router = createBrowserRouter([
     element:<App />,
     children:[
       {
-        path:'/:connectionID',
-        element:<ChatWindow />
-      }
+        path:'/setting',
+        element:<Settings />
+      },
+      {
+        path:'/home',
+        element:<ChatArea />
+      },
     ]
-  }
+  },
+  {
+    path: '/register',
+    element : <Register />
+  },
+  {
+    path: '/login',
+    element : <Login />
+  },
 ])
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
