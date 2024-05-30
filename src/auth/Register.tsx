@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useState } from "react";
 import Cookies from 'js-cookie'
+import { setToken } from "../utils/util";
 const Register = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -25,7 +26,7 @@ const Register = () => {
        password:password
      })
      if (res.status === 200) {
-      Cookies.set('token', res.data.registeredUser.token);
+      setToken(res.data.registeredUser.token);
       alert('User registered succesfully')
       setPassword('')
       setEmail('')
