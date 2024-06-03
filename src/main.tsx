@@ -5,8 +5,13 @@ import './index.css'
 import {createBrowserRouter, RouterProvider} from 'react-router-dom'
 import Register from './auth/Register.tsx'
 import Login from './auth/Login.tsx'
-import Settings from './components/Settings.tsx'
+import { Settings } from './components/Settings.tsx'
 import ChatArea from './components/ChatArea.tsx'
+import { RecoilRoot } from 'recoil'
+import Account from './components/Account.tsx'
+import FriendRequests from './components/FriendRequests.tsx'
+import Chats from './components/Chats.tsx'
+
 
 const router = createBrowserRouter([
   {
@@ -14,26 +19,42 @@ const router = createBrowserRouter([
     element:<App />,
     children:[
       {
-        path:'/setting',
+        path:'setting',
         element:<Settings />
       },
       {
-        path:'/home',
-        element:<ChatArea />
+        path:'home',
+        element:<ChatArea />,
+        children:[
+          {
+            path:'user/:id',
+            element: <Chats />
+          }
+        ]
       },
+      {
+        path:'account',
+        element:<Account />
+      },
+      {
+        path:'notification',
+        element:<FriendRequests />
+      }
     ]
   },
   {
-    path: '/register',
+    path: 'register',
     element : <Register />
   },
   {
-    path: '/login',
+    path: 'login',
     element : <Login />
   },
 ])
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <RecoilRoot>
+      <RouterProvider router={router} />
+    </RecoilRoot>
   </React.StrictMode>,
 )
