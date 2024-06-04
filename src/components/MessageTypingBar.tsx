@@ -1,13 +1,43 @@
 import { GrAttachment } from "react-icons/gr";
 import { BiMicrophone } from "react-icons/bi";
 import { TbSend } from "react-icons/tb";
+import { useParams } from "react-router-dom";
+import { useState } from "react";
 
-const MessageTypingBar = () => {
+interface Message {
+  friendId: number;
+  text: string;
+}
+
+interface MessageTypingBarProp {
+  ws: WebSocket | null;
+  onSendMessage: (message: Message) => void;
+}
+
+const MessageTypingBar: React.FC<MessageTypingBarProp> = ({ ws, onSendMessage }) => {
+  const { id } = useParams<{ id: string }>();
+  const [input, setInput] = useState('');
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInput(e.target.value);
+  };
+
+  const handleSendMessage = () => {
+    if (input.trim() === '' || !id) return;
+
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      const message: Message = { friendId: parseInt(id, 10), text: input };
+      ws.send(JSON.stringify(message));
+      onSendMessage(message);
+    }
+    setInput('');
+  };
+
   return (
-    <div className="h-14 w-[90%] rounded-lg bg-purple-200 flex">
+    <div className="h-14 w-[90%] rounded-lg bg-white/15 flex">
       <div
-        className="h-14 w-14 text-2xl flex items-center rounded-full hover:bg-purple-300
-         justify-center text-black"
+        className="h-14 w-14 text-2xl flex items-center rounded-full
+         justify-center text-black  hover:bg-black/35 hover:text-white transition-all duration-500"
       >
         <GrAttachment />
       </div>
@@ -16,20 +46,23 @@ const MessageTypingBar = () => {
         text-black outline-none
         w-[70%] placeholder:text-gray-700 px-4"
         placeholder="Your Message"
+        value={input}
+        onChange={handleChange}
       />
       <div className="flex ">
         <div
           className="h-14 w-14 text-2xl flex items-center
-         justify-center text-black rounded-full hover:bg-purple-300"
+         justify-center text-black rounded-full  hover:bg-black/35 hover:text-white transition-all duration-500"
         >
           <BiMicrophone />
         </div>
-        <div
+        <button
+          onClick={handleSendMessage}
           className="h-14 w-14 text-2xl flex items-center
-         justify-center text-black rounded-full hover:bg-purple-300"
+         justify-center text-black rounded-full hover:bg-black/35 hover:text-white transition-all duration-500"
         >
           <TbSend />
-        </div>
+        </button>
       </div>
     </div>
   );
