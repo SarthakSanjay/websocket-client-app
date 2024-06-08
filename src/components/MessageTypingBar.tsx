@@ -2,11 +2,12 @@ import { GrAttachment } from "react-icons/gr";
 import { BiMicrophone } from "react-icons/bi";
 import { TbSend } from "react-icons/tb";
 import { useParams } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface Message {
   friendId: number;
   text: string;
+  createdAt ?: Date
 }
 
 interface MessageTypingBarProp {
@@ -18,6 +19,20 @@ const MessageTypingBar: React.FC<MessageTypingBarProp> = ({ ws, onSendMessage })
   const { id } = useParams<{ id: string }>();
   const [input, setInput] = useState('');
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        handleSendMessage();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [input]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInput(e.target.value);
   };
@@ -25,12 +40,12 @@ const MessageTypingBar: React.FC<MessageTypingBarProp> = ({ ws, onSendMessage })
   const handleSendMessage = () => {
     if (input.trim() === '' || !id) return;
 
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      const message: Message = { friendId: parseInt(id, 10), text: input };
+    if (ws && ws.readyState === WebSocket.OPEN && input.trim() !== '') {
+      const message: Message = { friendId: parseInt(id, 10), text: input ,createdAt: new Date() };
       ws.send(JSON.stringify(message));
       onSendMessage(message);
+      setInput('');
     }
-    setInput('');
   };
 
   return (
