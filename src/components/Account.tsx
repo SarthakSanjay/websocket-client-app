@@ -2,42 +2,40 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { MdEdit, MdOutlineEditOff } from "react-icons/md";
 import { TOKEN } from "../utils/util";
+import { useRecoilValueLoadable } from "recoil";
+import { fetchSelfDetails } from "../atom/atom";
 
 interface user {
+    id:number,
     username : string,
     email : string
 }
 const Account = () => {
-  const [field, setField] = useState<user>({username:'',email:''});
 
-  useEffect(()=>{
-    console.log(TOKEN);
-    const getUserDetails = async() =>{
-        const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/user/details`,{
-            headers:{
-                Authorization: `Bearer ${TOKEN}`
-            }
-        })
-        console.log(res.data.user);
-        setField(res.data.user)
+  const userLoadable = useRecoilValueLoadable(fetchSelfDetails);
+  const [user, setUser] = useState<user | null>(null);
+
+  useEffect(() => {
+    if (userLoadable.state === 'hasValue') {
+      setUser(userLoadable.contents);
     }
-    getUserDetails()
-  },[])
+  }, [userLoadable]);
+  
   return (
     <div
       className={`h-full w-[65%] flex flex-col rounded-3xl bg-gradient-to-r from-blue-600 to-violet-600 dark:bg-purple-950  p-4`}
     >
       <h1 className="text-3xl">Account</h1>
       <div className="flex gap-2 flex-col my-4 h-full w-full p-4">
-        <Fields field={field.username}  label={"Username"}/>
-        <Fields field={field.email}  label={"Email"}/>
+        <Fields field={user?.username}  label={"Username"}/>
+        <Fields field={user?.email}  label={"Email"}/>
       </div>
     </div>
   );
 };
 
 interface FieldsProp {
-    field : string
+    field ?: string
     label : string
 }
 
