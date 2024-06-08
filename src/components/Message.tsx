@@ -1,8 +1,11 @@
+import { format } from "date-fns";
+
 interface MessageProp {
   self?: boolean;
   text: string;
+  time?: Date;
 }
-const Message: React.FC<MessageProp> = ({ self, text }) => {
+const Message: React.FC<MessageProp> = ({ self, text ,time}) => {
   // console.log(self);
   return (
     <div
@@ -12,6 +15,7 @@ const Message: React.FC<MessageProp> = ({ self, text }) => {
     `}
     >
       {text}
+      <span className={`text-[10px] absolute top-[100%] ${self ? "left-0" : 'right-0'}`}>{time && format(time,"p")}</span>
     </div>
   );
 };
