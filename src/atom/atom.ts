@@ -28,3 +28,27 @@ export const fetchNotificationCount = selector({
       }
     },
   });
+
+  export const messageAtom = atom({
+    key: 'messageAtom',
+    default: {
+      friendId : 0,
+      message: ''
+    }
+  })
+
+  export const fetchSelfDetails = selector({
+    key: 'fetchSelfDetails',
+    get:  async () => {
+      try {
+        const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/user/details`,{
+          headers:{
+              Authorization: `Bearer ${TOKEN}`
+          }
+      })
+        return res.data.user; 
+      } catch (error:any) {
+        console.error('Error fetching self details:', error.message);
+      }
+    },
+  })
