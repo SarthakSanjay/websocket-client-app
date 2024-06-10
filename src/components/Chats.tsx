@@ -8,10 +8,12 @@ import { TOKEN } from "../utils/util";
 import { User } from "./SearchModal";
 import { useRecoilValueLoadable } from "recoil";
 import { fetchSelfDetails } from "../atom/atom";
+import { RxCross2 } from "react-icons/rx";
 
 interface Message {
   friendId: number;
   text: string;
+  createdAt?: Date;
 }
 
 interface SavedMessage extends Message {
@@ -25,10 +27,11 @@ const Chats = () => {
   const [user , setUser] = useState<User>({id:0,username:'',email:''})
   const [message , setMessages] = useState<Message[]>([])
   const [savedMessages , setSavedMessages] = useState([])
+  const [selectedMessages , setSelectedMessages] = useState<number[]>([])
   const ws = useRef<WebSocket | null>(null);
   const userLoadable = useRecoilValueLoadable(fetchSelfDetails);
   const [myId, setMyId] = useState<number>(0);
-
+  const [deleted , setDeleted] = useState(false)
   useEffect(() => {
     if (userLoadable.state === 'hasValue') {
       setMyId(userLoadable.contents.id);
@@ -59,7 +62,7 @@ const Chats = () => {
 
      fetchChatMessages()
      console.log('id changed');
-  },[id])
+  },[id,deleted])
 
   useEffect(() => {
     if (myId) {
@@ -76,6 +79,7 @@ const Chats = () => {
 
       ws.current.onclose = () => {
         console.log('WebSocket disconnected');
+        setMessages([])
       };
 
       return () => {
@@ -89,21 +93,68 @@ const Chats = () => {
     setMessages((prevMessages) => [...prevMessages, message]);
   };
   
+  const toggleSelectMessage = (messageId : number) =>{
+    setSelectedMessages(prev => 
+      prev.includes(messageId) ?
+      prev.filter(id => id !== messageId) :
+      [...prev , messageId]
+      )
+  }
+
+  const handleDeleteMessage = async() =>{
+    try {
+      const res = await axios.delete(`${import.meta.env.VITE_BASE_URL}/message/delete`,{
+        data:{
+          messageIds : selectedMessages
+        },
+        headers:{
+          Authorization : `Bearer ${TOKEN}`
+        }
+      })
+      if(res.status === 200){
+        alert('deleted')
+        setDeleted(true)
+      }
+      setSelectedMessages([]);
+    } catch (error) {
+      console.error('Error deleting messages:', error);
+    }
+  }
+
   return (
     <div className="h-full w-[70%] relative text-black">
       <Header user={user} />
       <div className="h-[80%] px-3 overflow-y-scroll flex flex-col" >
         {
           savedMessages.map((msg:SavedMessage)=>{
-            return <Message key={msg.id} text={msg.text} self={msg.senderId === myId ? true : false} />
+            const isSelected = selectedMessages.includes(msg.id)
+            return <div className={`w-full flex flex-col items-center h-max rounded-lg mb-1 pb-1 ${isSelected ? 'bg-green-500/65': ''}`}
+            onClick={()=> toggleSelectMessage(msg.id)}
+            >
+              <Message key={msg.id} time={msg.createdAt} text={msg.text} self={msg.senderId === myId ? true : false} />
+            </div>
            })}
        {message.map((msg,index)=>{
-        return <Message key={index} text={msg.text} self={msg.friendId !== myId ? true : false} />
+        return <Message key={index} time={msg.createdAt} text={msg.text} self={msg.friendId !== myId ? true : false} />
        })}
       </div>
       <div className="absolute bottom-4 w-full flex justify-center">
         <MessageTypingBar ws={ws.current} onSendMessage={handleSendMessage} />
       </div>
+      {
+        selectedMessages.length > 0 &&
+        <div className="h-16 w-[400px] bg-black absolute rounded-lg flex items-center justify-between px-3">
+         <h1 className="text-white"> {selectedMessages.length} messages selected</h1>
+         <div className="flex gap-2">
+         <button className="h-10 w-max px-3 bg-red-600 hover:bg-red-700 rounded-lg"
+         onClick={handleDeleteMessage}
+         >Delete</button>
+         <button className="h-10 w-max px-3 bg-white hover:bg-black border hover:text-white text-black  rounded-lg" 
+         onClick={()=>{setSelectedMessages([])}}
+         > <RxCross2 /> </button>
+         </div>
+        </div>
+      }
     </div>
   );
 };
