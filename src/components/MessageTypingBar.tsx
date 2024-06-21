@@ -1,85 +1,176 @@
-import { GrAttachment } from "react-icons/gr";
-import { BiMicrophone } from "react-icons/bi";
-import { TbSend } from "react-icons/tb";
 import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import React, { useRef, useState } from "react";
+import SendBtn from "./SendBtn";
+import AudioRecorder from "./AudioRecorder";
+import Media from "./Media";
+import { fileUrlAtom } from "../atom/atom";
+import { useRecoilState } from "recoil";
+import axios from "axios";
+import { TOKEN } from "../utils/util";
 
-interface Message {
+ export interface MessageProp {
   friendId: number;
-  text: string;
-  createdAt ?: Date
+  data?: string;
+  messageType: string;
+  filename?: string;
+  contentType?: string;
+  createdAt?: Date;
 }
 
 interface MessageTypingBarProp {
   ws: WebSocket | null;
-  onSendMessage: (message: Message) => void;
+  onSendMessage: (message: MessageProp) => void;
 }
 
-const MessageTypingBar: React.FC<MessageTypingBarProp> = ({ ws, onSendMessage }) => {
+const MessageTypingBar: React.FC<MessageTypingBarProp> = ({
+  ws,
+  onSendMessage,
+}) => {
   const { id } = useParams<{ id: string }>();
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
+  const [messageType, setMessageType] = useState('TEXT');
+  const [fileUrl, setFileUrl] = useRecoilState(fileUrlAtom);
+  const [fileData, setFileData] = useState<{name:string , type:string}>({name:'',type:''});
+  const [file , setFile] = useState(null)
+  const fileInputRef = useRef(null);
+  const [filename , setFilename] = useState(`image-${Date.now()}`)
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Enter') {
-        handleSendMessage();
+  async function uploadFile(file:any){
+    const fileExtension = file.type.split('/')[1];
+    const fileName = `${filename}.${fileExtension}`;
+      
+    try {
+      let res = await  axios.post(`/upload/file`, {
+        filename:  fileName,
+        contentType : file.type
+      },
+      {
+        headers:{
+          Authorization: `Bearer ${TOKEN}`
+        }
+      })
+      if(res.status === 200){
+        console.log(res.status , res.data.url);
+        console.log('formdata',file);
+      let upload = await  axios.put(res.data.url , file , {
+        headers:{
+          "Content-Type" : file.type
+        }
+      })
+
+      if(upload.status === 200 ){
+        alert(`image uploaded ${upload.status} ${upload}`)
       }
-    };
+      
+      }
+     } catch (error) {
+      console.log(error)
+     }
+  }
+  const handleDivClick = () => {
+    if (fileInputRef.current) {
+      //@ts-ignore
+      fileInputRef.current.click();
+    }
+  };
 
-    window.addEventListener('keydown', handleKeyDown);
+  const handleFileChange = (event: any) => {
+    const file = event.target.files[0];
+    console.log('file',file.type.split('/')[1]);
+    setFile(file)
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setFileUrl(url);
+      setFileData({ name: file.name, type: file.type });
+      setMessageType(file.type.split('/')[0].toUpperCase())
 
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [input]);
+    }
+  };
+  // useEffect(() => {
+  //   const handleKeyDown = (e: KeyboardEvent) => {
+  //     if (e.key === "Enter") {
+  //       handleSendMessage();
+  //     }
+  //   };
+
+  //   window.addEventListener("keydown", handleKeyDown);
+
+  //   return () => {
+  //     window.removeEventListener("keydown", handleKeyDown);
+  //   };
+  // }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInput(e.target.value);
   };
 
-  const handleSendMessage = () => {
-    if (input.trim() === '' || !id) return;
+  const handleSendMessage = async() => {
+  try {
+    if(!id) return
+      // if (input.trim() === "" || !id ) return;
+  
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      if(input.trim() !== ''){
+        let message: MessageProp = {
+          friendId: parseInt(id, 10),
+          data: input,
+          messageType: messageType,
+          createdAt: new Date(),
+        };
+        console.log('message', message);
+        ws.send(JSON.stringify(message));
+        onSendMessage(message);
+        setInput("");
 
-    if (ws && ws.readyState === WebSocket.OPEN && input.trim() !== '') {
-      const message: Message = { friendId: parseInt(id, 10), text: input ,createdAt: new Date() };
-      ws.send(JSON.stringify(message));
-      onSendMessage(message);
-      setInput('');
+      }
+      if(file){
+        console.log(file);
+        // setFilename(`image-${Date.now()}.${file.type.split('/')[1]}`)
+        let message: MessageProp = {
+          friendId: parseInt(id, 10),
+          data: fileUrl,
+          messageType: messageType,
+          contentType : fileData.type,
+          filename: filename,
+          createdAt: new Date(),
+        };
+
+        await uploadFile(file)
+        console.log('message', message);
+        ws.send(JSON.stringify(message));
+        onSendMessage(message);
+        setInput("");
+        setFileUrl('')
+
+    
+      }
     }
+  } catch (error) {
+    console.log(error)
+  }
   };
 
   return (
-    <div className="h-14 w-[90%] rounded-lg bg-white/15 flex">
-      <div
-        className="h-14 w-14 text-2xl flex items-center rounded-full
-         justify-center text-black  hover:bg-black/35 hover:text-white transition-all duration-500"
-      >
-        <GrAttachment />
-      </div>
-      <input
-        className="bg-transparent
+   
+      <div className="h-14 w-[90%] rounded-lg bg-white/15 flex relative">
+       <Media
+        handleDivClick={handleDivClick}
+        handleFileChange={handleFileChange}
+        fileInputRef={fileInputRef} />
+        <input
+          className="bg-transparent
         text-black outline-none
         w-[70%] placeholder:text-gray-700 px-4"
-        placeholder="Your Message"
-        value={input}
-        onChange={handleChange}
-      />
-      <div className="flex ">
-        <div
-          className="h-14 w-14 text-2xl flex items-center
-         justify-center text-black rounded-full  hover:bg-black/35 hover:text-white transition-all duration-500"
-        >
-          <BiMicrophone />
+          placeholder="Your Message"
+          value={input}
+          onChange={handleChange}
+        />
+        <div className="flex ">
+          <AudioRecorder />
+          <SendBtn handleSendMessage={handleSendMessage} />
         </div>
-        <button
-          onClick={handleSendMessage}
-          className="h-14 w-14 text-2xl flex items-center
-         justify-center text-black rounded-full hover:bg-black/35 hover:text-white transition-all duration-500"
-        >
-          <TbSend />
-        </button>
       </div>
-    </div>
+
   );
 };
 
