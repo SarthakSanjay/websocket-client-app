@@ -13,9 +13,9 @@ const Message: React.FC<MessageProp> = ({ self, data ,time , type}) => {
     const renderMessageContent = () => {
       switch (type) {
         case 'TEXT':
-          return <p>{data}</p>;
+          return <p className="w-max max-w-[200px]">{data}</p>;
         case 'VIDEO':
-          return <video className="h-[200px] w-[200px] border" controls src={data}></video>;
+          return <video className="h-full w-full max-w-[200px] max-h-[200px] " controls src={data}></video>;
         case 'IMAGE':
           return <img className="h-[200px] w-[200px]" src={data} alt="Sent image" />;
         case 'AUDIO':
@@ -28,8 +28,8 @@ const Message: React.FC<MessageProp> = ({ self, data ,time , type}) => {
 
   return (
     <div
-      className={`h-min  max-w-[40%] py-2 px-3 rounded-lg m-3 relative text-purple-950
-    ${self ? " bg-black/35 text-white self-end" : " bg-white/35 self-start"} 
+      className={` h-min w-max  py-2 px-3 rounded-lg m-3 relative text-purple-950
+    ${self ? `${type === 'AUDIO' ? 'bg-none' : 'bg-black/35'}  text-white self-end` : ` ${type === 'AUDIO' ? 'bg-none' : 'bg-white/35'} self-start`} 
 
     `}
     >
