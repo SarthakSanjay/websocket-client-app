@@ -72,8 +72,7 @@ const Account = () => {
       const url = URL.createObjectURL(image);
       setTempImageUrl(url)
       const imageExtension = image.type.split("/")[1];
-      const imageType = image.type.split("/")[0];
-      const imgName = `${imageType}-${uniqueImageName}.${imageExtension}`;
+      const imgName = `${uniqueImageName}.${imageExtension}`;
       setImageName(imgName)
     }
   };
