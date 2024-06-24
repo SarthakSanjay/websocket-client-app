@@ -29,14 +29,14 @@ const MessageTypingBar: React.FC<MessageTypingBarProp> = ({
   const { id } = useParams<{ id: string }>();
   const [input, setInput] = useState("");
   const [messageType, setMessageType] = useState("TEXT");
-  const [fileUrl, setFileUrl] = useRecoilState(fileUrlAtom);
+  const [_fileUrl, setFileUrl] = useRecoilState(fileUrlAtom);
   const [fileData, setFileData] = useState<{ name: string; type: string }>({
     name: "",
     type: "",
   });
   const [file, setFile] = useState(null);
   const fileInputRef = useRef(null);
-  const [filename, setFilename] = useState(`${Date.now()}`);
+  const [filename, _setFilename] = useState(`${Date.now()}`);
 
   async function uploadFile(file: any) {
     const fileExtension = file.type.split("/")[1]
@@ -56,8 +56,6 @@ const MessageTypingBar: React.FC<MessageTypingBarProp> = ({
         }
       );
       if (res.status === 200) {
-        console.log(res.status, res.data.url);
-        console.log("formdata", file);
         let upload = await axios.put(res.data.url, file, {
           headers: {
             "Content-Type": file.type,
@@ -81,7 +79,7 @@ const MessageTypingBar: React.FC<MessageTypingBarProp> = ({
 
   const handleFileChange = (event: any) => {
     const file = event.target.files[0];
-    console.log("file", file.type.split("/")[1]);
+
     setFile(file);
     if (file) {
       const url = URL.createObjectURL(file);
