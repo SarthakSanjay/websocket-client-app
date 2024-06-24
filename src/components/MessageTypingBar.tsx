@@ -39,9 +39,8 @@ const MessageTypingBar: React.FC<MessageTypingBarProp> = ({
   const [filename, setFilename] = useState(`${Date.now()}`);
 
   async function uploadFile(file: any) {
-    const fileExtension = file.type.split("/")[1];
-    const fileType = file.type.split("/")[0];
-    const fileName = `${fileType}-${filename}.${fileExtension}`;
+    const fileExtension = file.type.split("/")[1]
+    const fileName = `${filename}.${fileExtension}`;
 
     try {
       let res = await axios.post(
