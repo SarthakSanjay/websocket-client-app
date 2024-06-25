@@ -16,7 +16,7 @@ export const fetchNotificationCount = selector({
     key: 'fetchNotificationCount',
     get: async ({ get }) => {
       try {
-        const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/friend/all/request`,{
+        const res = await axios.get(`/friend/all/request`,{
             headers:{
                 Authorization: `Bearer ${TOKEN}`
             }
@@ -37,11 +37,16 @@ export const fetchNotificationCount = selector({
     }
   })
 
+  export const fileUrlAtom = atom({
+    key: 'fileUrlAtom',
+    default: ''
+  })
+
   export const fetchSelfDetails = selector({
     key: 'fetchSelfDetails',
     get:  async () => {
       try {
-        const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/user/details`,{
+        const res = await axios.get(`/user/details`,{
           headers:{
               Authorization: `Bearer ${TOKEN}`
           }
@@ -51,4 +56,37 @@ export const fetchNotificationCount = selector({
         console.error('Error fetching self details:', error.message);
       }
     },
+  })
+
+  export const toggleRecordAtom = atom({
+    key: 'toggleRecordAtom',
+    default: false
+  })
+
+  export const searchInputAtom = atom({
+    key: 'searchInputAtom',
+    default: ''
+  })
+ 
+  export const mediaTypeAtom = atom({
+    key: 'mediaTypeAtom',
+    default: 'images'
+  })
+
+  export const toggleFilesAtom = atom({
+    key: 'toggleFilesAtom',
+    default: false
+  })
+
+  export const imagesAtom = atom({
+    key: 'imagesAtom',
+    default: []
+  })
+  export const videosAtom = atom({
+    key: 'videosAtom',
+    default: []
+  })
+  export const audiosAtom = atom({
+    key: 'audiosAtom',
+    default: []
   })
