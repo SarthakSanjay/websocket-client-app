@@ -5,7 +5,7 @@ import MessageTypingBar, { MessageProp } from "./MessageTypingBar";
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { TOKEN } from "../utils/util";
-import { useRecoilValue, useRecoilValueLoadable } from "recoil";
+import { useRecoilState, useRecoilValue, useRecoilValueLoadable } from "recoil";
 import { fetchSelfDetails, fileUrlAtom, toggleRecordAtom } from "../atom/atom";
 import { RxCross2 } from "react-icons/rx";
 import SelectedMediaModel from "./SelectedMediaModel";
@@ -29,7 +29,7 @@ const Chats = () => {
   const userLoadable = useRecoilValueLoadable(fetchSelfDetails);
   const [myId, setMyId] = useState<number>(0);
   const [deleted, setDeleted] = useState(false);
-  const fileUrl = useRecoilValue(fileUrlAtom);
+  const [fileUrl, setFileUrl] = useRecoilState(fileUrlAtom);
   const toggleRecord = useRecoilValue(toggleRecordAtom);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
@@ -135,9 +135,9 @@ const Chats = () => {
 
   const handleScroll = () => {
     if (messagesEndRef.current) {
-      const { scrollTop } = messagesEndRef.current;
-      console.log(scrollTop);
-      if (scrollTop === 0) {
+      const { scrollTop , scrollHeight} = messagesEndRef.current;
+      console.log(scrollTop , scrollHeight);
+      if (scrollTop < scrollHeight - 1000) {
         setShowScrollButton(true);
       } else {
         setShowScrollButton(false);
@@ -147,8 +147,15 @@ const Chats = () => {
   return (
     <div className="h-full w-[70%] relative text-black">
       {fileUrl && (
-        <div className="absolute top-[20%] bg-black/65 border rounded-lg h-[600px] w-[400px] flex justify-center items-center ">
+        <div className="absolute top-[15%] left-[16%] bg-black border z-20 rounded-lg  pt-10  w-2/3 h-2/3 flex justify-center items-center flex-col ">
           <SelectedMediaModel fileUrl={fileUrl} />
+          <button
+            onClick={() => setFileUrl("")}
+            className="h-10 w-max py-1 my-2 px-5 bg-red-600 text-white rounded-lg
+          hover:bg-red-800 "
+          >
+            Close
+          </button>
         </div>
       )}
       {toggleRecord ? <RecordAudio /> : ""}
