@@ -90,3 +90,28 @@ export const fetchNotificationCount = selector({
     key: 'audiosAtom',
     default: []
   })
+
+  export const messageTypeAtom = atom({
+    key: 'messageTypeAtom',
+    default: "TEXT"
+  })
+
+  export const fileAtom = atom<File | null>({
+    key: 'fileAtom',
+    default : null
+  })
+
+  export const filenameAtom = atom({
+    key: 'filenameAtom',
+    default: `${Date.now()}`
+  })
+
+  export const inputAtom = atom({
+    key: 'inputAtom',
+    default: ''
+  })
+
+  export const websocketAtom = atom<WebSocket | null>({
+    key: 'websocketAtom',
+    default: null
+  })
