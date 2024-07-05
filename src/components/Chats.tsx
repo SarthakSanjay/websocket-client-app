@@ -5,8 +5,8 @@ import MessageTypingBar, { MessageProp } from "./MessageTypingBar";
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { TOKEN } from "../utils/util";
-import { useRecoilState, useRecoilValue, useRecoilValueLoadable } from "recoil";
-import { fetchSelfDetails, fileUrlAtom, toggleRecordAtom } from "../atom/atom";
+import { useRecoilState, useRecoilValue, useRecoilValueLoadable, useSetRecoilState } from "recoil";
+import { fetchSelfDetails, fileUrlAtom, toggleRecordAtom, websocketAtom } from "../atom/atom";
 import { RxCross2 } from "react-icons/rx";
 import SelectedMediaModel from "./SelectedMediaModel";
 import { User } from "../types/common";
@@ -26,6 +26,7 @@ const Chats = () => {
   const [savedMessages, setSavedMessages] = useState([]);
   const [selectedMessages, setSelectedMessages] = useState<number[]>([]);
   const ws = useRef<WebSocket | null>(null);
+  const setWss = useSetRecoilState(websocketAtom)
   const userLoadable = useRecoilValueLoadable(fetchSelfDetails);
   const [myId, setMyId] = useState<number>(0);
   const [deleted, setDeleted] = useState(false);
@@ -69,12 +70,12 @@ const Chats = () => {
   useEffect(() => {
     if (myId) {
       ws.current = new WebSocket(`ws://localhost:8080/${myId}`);
-
+      setWss(ws.current)
       ws.current.onopen = () => {
         console.log("Connected to WebSocket server");
       };
 
-      ws.current.onmessage = (e) => {
+      ws.current.onmessage = (e:any) => {
         const receivedMessage = JSON.parse(e.data);
         setMessages((prevMessages) => [...prevMessages, receivedMessage]);
       };
@@ -101,7 +102,7 @@ const Chats = () => {
     }
   }, [id, message]);
 
-  const handleSendMessage = (message: MessageProp) => {
+  const onSendMessage = (message: MessageProp) => {
     setMessages((prevMessages) => [...prevMessages, message]);
   };
 
@@ -136,7 +137,7 @@ const Chats = () => {
   const handleScroll = () => {
     if (messagesEndRef.current) {
       const { scrollTop , scrollHeight} = messagesEndRef.current;
-      console.log(scrollTop , scrollHeight);
+      // console.log(scrollTop , scrollHeight);
       if (scrollTop < scrollHeight - 1000) {
         setShowScrollButton(true);
       } else {
@@ -158,7 +159,7 @@ const Chats = () => {
           </button>
         </div>
       )}
-      {toggleRecord ? <RecordAudio /> : ""}
+      {toggleRecord ? <RecordAudio onSendMessage={onSendMessage} /> : ""}
       <Header user={user} />
       <div
         ref={messagesEndRef}
@@ -220,7 +221,7 @@ const Chats = () => {
       )}
 
       <div className="absolute bottom-4 w-full flex justify-center">
-        <MessageTypingBar ws={ws.current} onSendMessage={handleSendMessage} />
+        <MessageTypingBar ws={ws.current} onSendMessage={onSendMessage} />
       </div>
       {selectedMessages.length > 0 && (
         <div className="h-16 w-[400px] bg-black absolute rounded-lg flex items-center justify-between px-3">
