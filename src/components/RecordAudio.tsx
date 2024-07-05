@@ -1,18 +1,30 @@
-import {  useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { PiMicrophone, PiMicrophoneSlash } from "react-icons/pi";
-import { useSetRecoilState } from "recoil";
-import { toggleRecordAtom } from "../atom/atom";
+import { useRecoilValue, useSetRecoilState } from "recoil";
+import {
+  fileAtom,
+  messageTypeAtom,
+  toggleRecordAtom,
+  websocketAtom,
+} from "../atom/atom";
 import { useReactMediaRecorder } from "react-media-recorder";
 import AudioPlayer from "./AudioPlayer";
 import { BiPause, BiPlay } from "react-icons/bi";
 import { MdRestartAlt } from "react-icons/md";
 import { useStopwatch } from "react-timer-hook";
+import SendBtn from "./SendBtn";
+import { MessageProp } from "./MessageTypingBar";
 
-
-const RecordAudio = () => {
+interface recordAudio {
+  onSendMessage: (message: MessageProp) => void;
+}
+const RecordAudio: React.FC<recordAudio> = ({ onSendMessage }) => {
   const [isRecording, setIsRecording] = useState(false);
-  const [isPaused ,setIsPaused] = useState(false)
+  const [isPaused, setIsPaused] = useState(false);
   const setToggleRecord = useSetRecoilState(toggleRecordAtom);
+  const wss = useRecoilValue(websocketAtom);
+  const setFile = useSetRecoilState(fileAtom);
+  const setMessageType = useSetRecoilState(messageTypeAtom);
   const {
     startRecording,
     stopRecording,
@@ -21,10 +33,27 @@ const RecordAudio = () => {
     clearBlobUrl,
     resumeRecording,
   } = useReactMediaRecorder({ video: false, audio: true });
-  const { start, pause, reset, seconds, minutes, isRunning } = useStopwatch({
+
+  const { start, pause, reset, seconds, minutes } = useStopwatch({
     autoStart: false,
   });
   
+  useEffect(() => {
+    const fetchBlobAndSetFile = async () => {
+      if (mediaBlobUrl) {
+        const response = await fetch(mediaBlobUrl);
+        const blob = await response.blob();
+        const audioFile = new File([blob], "recording.wav", {
+          type: "audio/wav",
+        });
+        setFile(audioFile);
+        setMessageType(audioFile.type.split("/")[0].toUpperCase());
+      }
+    };
+
+    fetchBlobAndSetFile();
+  }, [mediaBlobUrl]);
+
   const startRecord = () => {
     setIsRecording(true);
     startRecording();
@@ -43,28 +72,32 @@ const RecordAudio = () => {
   };
 
   const pauseRecord = () => {
-    if(isPaused){
-      start()
-      resumeRecording()
-      setIsPaused(false)
-    }else{
+    if (isPaused) {
+      start();
+      resumeRecording();
+      setIsPaused(false);
+    } else {
       pauseRecording();
       pause();
-      setIsPaused(true)
+      setIsPaused(true);
     }
   };
-
+  // console.log('recordAudio');
   return (
     <div
       className="h-[400px] w-[500px] bg-black/85 rounded-lg
     absolute bottom-32 z-50 text-white flex justify-center items-center
     flex-col gap-4 "
     >
-      {mediaBlobUrl ? <AudioPlayer src={mediaBlobUrl} /> : <div className="h-16 p-2 text-[35px]">
-        {minutes < 10 && "0"}
-        {minutes}:{seconds < 10 && "0"}
-        {seconds}
-      </div>}
+      {mediaBlobUrl ? (
+        <AudioPlayer src={mediaBlobUrl} />
+      ) : (
+        <div className="h-16 p-2 text-[35px]">
+          {minutes < 10 && "0"}
+          {minutes}:{seconds < 10 && "0"}
+          {seconds}
+        </div>
+      )}
       <div className="flex gap-3">
         {isRecording ? (
           <button
@@ -89,7 +122,7 @@ const RecordAudio = () => {
           className="h-14 w-14 rounded-full bg-gradient-to-r from-purple-600 to-red-500 text-black
         flex justify-center items-center text-3xl hover:bg-sky-500 hover:text-white"
         >
-          {isPaused ? <BiPlay /> :<BiPause />}
+          {isPaused ? <BiPlay /> : <BiPause />}
         </button>
 
         <button
@@ -99,8 +132,9 @@ const RecordAudio = () => {
         >
           <MdRestartAlt />
         </button>
+        <SendBtn ws={wss} onSendMessage={onSendMessage} />
       </div>
-      
+
       <button
         onClick={() => setToggleRecord((prev) => !prev)}
         className="h-10 w-max py-1 px-5 bg-red-600 text-white rounded-lg
