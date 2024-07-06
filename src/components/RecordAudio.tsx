@@ -37,7 +37,7 @@ const RecordAudio: React.FC<recordAudio> = ({ onSendMessage }) => {
   const { start, pause, reset, seconds, minutes } = useStopwatch({
     autoStart: false,
   });
-  
+
   useEffect(() => {
     const fetchBlobAndSetFile = async () => {
       if (mediaBlobUrl) {
@@ -132,7 +132,15 @@ const RecordAudio: React.FC<recordAudio> = ({ onSendMessage }) => {
         >
           <MdRestartAlt />
         </button>
-        <SendBtn ws={wss} onSendMessage={onSendMessage} />
+        {mediaBlobUrl ? (
+          <SendBtn
+            ws={wss}
+            onSendMessage={onSendMessage}
+            fromTypingBar={false}
+          />
+        ) : (
+          ""
+        )}
       </div>
 
       <button
