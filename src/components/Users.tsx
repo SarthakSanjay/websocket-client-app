@@ -2,13 +2,18 @@ import { useEffect, useState } from "react"
 import UserChat from "./UserChat"
 import axios from "axios"
 import { TOKEN } from "../utils/util"
+import { User } from "../types/common"
+
+interface friend {
+  friend: User
+}
 
 const Users = () => {
   const [friends , setFriends] = useState([])
-  console.log('friends',friends);
+
   useEffect(()=>{
     async function getFriends() {
-      const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/friend/all`,{
+      const res = await axios.get(`/friend/all`,{
         headers: {
           Authorization: `Bearer ${TOKEN}`
         }
@@ -19,11 +24,12 @@ const Users = () => {
   },[])
   return (
     <div className="h-[95%] w-full ">
-        <UserChat />
-        <UserChat />
-        <UserChat />
-        <UserChat />
-        <UserChat />
+      {
+        friends.map((user:friend)=>{
+          return <UserChat key={user.friend.id} user={user.friend} />
+        })
+      }
+        
     </div>
   )
 }
