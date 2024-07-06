@@ -12,6 +12,7 @@ import SelectedMediaModel from "./SelectedMediaModel";
 import { User } from "../types/common";
 import RecordAudio from "./RecordAudio";
 import { FaChevronDown } from "react-icons/fa6";
+import SendBtn from "./SendBtn";
 
 interface SavedMessage extends MessageProp {
   id: number;
@@ -148,8 +149,9 @@ const Chats = () => {
   return (
     <div className="h-full w-[70%] relative text-black">
       {fileUrl && (
-        <div className="absolute top-[15%] left-[16%] bg-black border z-20 rounded-lg  pt-10  w-2/3 h-2/3 flex justify-center items-center flex-col ">
+        <div className="absolute top-[15%] left-[16%] bg-black  z-20 rounded-lg gap-3 pt-10  w-2/3 h-2/3 flex justify-center items-center flex-col ">
           <SelectedMediaModel fileUrl={fileUrl} />
+          <SendBtn ws={ws.current} onSendMessage={onSendMessage} />
           <button
             onClick={() => setFileUrl("")}
             className="h-10 w-max py-1 my-2 px-5 bg-red-600 text-white rounded-lg
