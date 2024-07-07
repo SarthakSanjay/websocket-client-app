@@ -1,13 +1,15 @@
 import axios from "axios";
 import { useState } from "react";
-import Cookies from 'js-cookie'
 import { setToken } from "../utils/util";
+import { useNavigate } from "react-router-dom";
+
 const Register = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password , setPassword] = useState("")
   const [passwordVisible , setPasswordVisible] = useState(false)
   const [error , setError] = useState("")
+  const navigate = useNavigate()
   const handleUsername = (e: any) => {
     setUsername(e.target.value);
   };
@@ -20,7 +22,7 @@ const Register = () => {
 
   const handleClick = async() => {
    try {
-    let res = await axios.post(`${import.meta.env.VITE_BASE_URL}/user/register`,{
+    let res = await axios.post(`/user/register`,{
        username:username,
        email:email,
        password:password
@@ -31,6 +33,7 @@ const Register = () => {
       setPassword('')
       setEmail('')
       setUsername('')
+      setError('')
     }
 
   } catch (error:any) {
@@ -83,6 +86,7 @@ const Register = () => {
         </div>
         {error && <div className="bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent text-xl">{error}</div>}
         <button className="bg-gradient-to-r from-red-500 to-orange-500 h-10 w-max px-4 rounded-lg text-white hover:scale-105 transition-all ease-in " onClick={handleClick}>Register</button>
+        <div className="text-white h-10 w-max px-3">Already Signed In  <button className="px-3 py-1 border border-transparent hover:border-white m-1 rounded-lg bg-black/35 "  onClick={()=>{navigate('/login')}}>Login</button> </div>
       </div>
     </div>
   );
