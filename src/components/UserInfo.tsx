@@ -29,6 +29,9 @@ const UserInfo = () => {
       fetchUserDetails();
     }
   }, [id]);
+  if(!id){
+    return <div className="h-full w-full flex justify-center items-center">Open Chats</div>
+  }
 
   return (
     <div className="h-full w-full flex items-center flex-col">
@@ -43,23 +46,31 @@ const UserInfo = () => {
       <span className="text-gray-800 text-lg p-2">{user.email}</span>
       <div className="h-40 w-full border-t">
         <h1 className="h-1/3 text-xl ml-7 flex items-end">Media</h1>
-        <div className=" h-2/3 w-full flex gap-1 justify-center items-center">
-          {images.slice(0, 3).map((img: filesProp) => {
-            return (
-              <img
-                key={img.id}
-                src={img.data}
-                className="h-20 w-20 rounded-lg"
-              />
-            );
-          })}
-          <div
-            onClick={() => setToggleFiles(true)}
-            className="h-20 w-20 border flex p-4 cursor-pointer items-center rounded-lg hover:bg-black/35"
-          >
-            show more
-          </div>
-        </div>
+       <div className=" h-2/3 w-full flex gap-1 justify-start items-center">
+       {images.length === 0 ? 
+       <div className="h-full w-full flex justify-center items-center">
+        No media
+       </div> 
+       : 
+        <>
+           {images.slice(0, 3).map((img: filesProp) => {
+         return (
+           <img
+             key={img.id}
+             src={img.data}
+             className="h-20 w-20 rounded-lg"
+           />
+         );
+       })}
+       <div
+         onClick={() => setToggleFiles(true)}
+         className="h-20 w-20 border flex p-4 cursor-pointer items-center rounded-lg hover:bg-black/35"
+       >
+         show more
+       </div>
+        </>    
+       }
+     </div>
       </div>
       <div className="h-52 w-full border-t ">
         <h1 className="text-xl ml-7 my-2 flex items-end">Files</h1>
